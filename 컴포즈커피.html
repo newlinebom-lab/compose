@@ -1,0 +1,435 @@
+ <!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>COMPOSE — Recipe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --amber:#FFB800;--amber-bg:rgba(255,184,0,0.13);--amber-border:rgba(255,184,0,0.35);
+  --hot:#FF5A3C;--hot-bg:rgba(255,90,60,0.10);--hot-border:rgba(255,90,60,0.30);
+  --ice:#3B9EFF;--ice-bg:rgba(59,158,255,0.10);--ice-border:rgba(59,158,255,0.30);
+  --green:#2ECC8A;--green-bg:rgba(46,204,138,0.08);--green-border:rgba(46,204,138,0.28);
+  --bg:#07070A;--card:#13131A;--card2:#1A1A24;--card3:#20202C;
+  --line:rgba(255,255,255,0.07);--line2:rgba(255,255,255,0.13);
+  --t1:#FFFFFF;--t2:#C8C8D4;--t3:#6A6A80;
+  --nav-h:60px;--r:12px;
+  --oswald:'Oswald',sans-serif;--noto:'Noto Sans KR',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:var(--noto);background:var(--bg);color:var(--t1);overflow:hidden}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:rgba(7,7,10,0.97);backdrop-filter:blur(20px);border-bottom:1.5px solid var(--amber-border);display:flex;align-items:center;padding:0 16px;gap:12px;z-index:200;}
+.nav-logo{display:flex;align-items:center;cursor:pointer;flex-shrink:0;}
+.nav-logo-c{background:var(--amber);color:#000;font-family:var(--oswald);font-size:1rem;font-weight:700;padding:4px 10px;border-radius:5px 0 0 5px;letter-spacing:.05em;line-height:1;}
+.nav-logo-r{background:var(--card2);color:var(--t2);font-family:var(--oswald);font-size:1rem;font-weight:500;padding:4px 10px;border-radius:0 5px 5px 0;letter-spacing:.1em;line-height:1;border:1px solid var(--line2);border-left:none;}
+.search-wrap{position:relative;flex:1;max-width:360px;}
+.search-wrap i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:.85rem;pointer-events:none;}
+.search-input{width:100%;height:38px;background:var(--card);border:1.5px solid var(--line2);border-radius:50px;color:var(--t1);font-family:var(--noto);font-size:.9rem;padding:0 14px 0 38px;outline:none;transition:border .15s;}
+.search-input::placeholder{color:var(--t3);}
+.search-input:focus{border-color:var(--amber);background:var(--amber-bg);}
+.autocomplete{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--card2);border:1.5px solid var(--amber-border);border-radius:12px;overflow:hidden;z-index:300;box-shadow:0 8px 32px rgba(0,0,0,.6);display:none;}
+.autocomplete.open{display:block;}
+.ac-item{padding:11px 14px;font-size:.9rem;font-weight:500;color:var(--t2);cursor:pointer;border-bottom:1px solid var(--line);transition:background .12s;display:flex;align-items:center;gap:10px;}
+.ac-item:last-child{border-bottom:none;}
+.ac-item:hover{background:var(--amber-bg);color:var(--t1);}
+.ac-item i{color:var(--amber);font-size:.8rem;flex-shrink:0;}
+.nav-btns{display:flex;gap:8px;flex-shrink:0;}
+.nbtn{height:36px;padding:0 14px;border-radius:8px;font-family:var(--oswald);font-size:.9rem;font-weight:600;letter-spacing:.06em;border:none;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;}
+.nbtn-y{background:var(--amber);color:#000;}
+.nbtn-g{background:var(--card2);color:var(--t2);border:1.5px solid var(--line2);}
+.nbtn-g:hover{border-color:var(--amber-border);color:var(--amber);}
+
+/* SCREENS */
+.screen{display:none;}
+.screen.active{display:block;animation:fadeUp .2s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.page{margin-top:var(--nav-h);height:calc(100vh - var(--nav-h));overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:16px 14px 32px;}
+
+/* HOME — 퀵바 없음, 카테고리만 */
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:1200px;margin:0 auto;}
+.cat-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 10px 14px;cursor:pointer;transition:all .18s ease;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;min-height:108px;position:relative;overflow:hidden;}
+.cat-card:hover{border-color:var(--amber-border);background:var(--card2);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,.5);}
+.cat-card:active{transform:scale(.97);}
+.cat-icon{width:44px;height:44px;border-radius:10px;background:var(--card2);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .18s;}
+.cat-card:hover .cat-icon{background:var(--amber-bg);border-color:var(--amber-border);}
+.cat-icon i{font-size:1.15rem;color:var(--amber);}
+.cat-icon i.icon-hot{color:var(--hot);}
+.cat-name{font-family:var(--oswald);font-size:.9rem;font-weight:600;letter-spacing:.07em;color:var(--t1);text-transform:uppercase;line-height:1;}
+.cat-ko{font-size:.72rem;color:var(--t3);margin-top:1px;}
+.new-dot{position:absolute;top:8px;right:8px;background:var(--hot);color:#fff;font-family:var(--oswald);font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:20px;}
+
+/* LIST */
+.list-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;max-width:1200px;margin-left:auto;margin-right:auto;}
+
+/* BACK 버튼 — 크고 편하게 */
+.back-btn{
+  display:flex;align-items:center;gap:8px;
+  height:42px;padding:0 16px;
+  background:var(--card2);border:1.5px solid var(--line2);
+  border-radius:10px;cursor:pointer;
+  font-family:var(--oswald);font-size:.9rem;font-weight:600;
+  letter-spacing:.06em;color:var(--t2);
+  transition:all .15s;flex-shrink:0;
+}
+.back-btn:hover{border-color:var(--amber-border);color:var(--amber);}
+.back-btn:active{transform:scale(.97);}
+.back-btn i{font-size:.85rem;}
+
+.list-title{font-family:var(--oswald);font-size:1.4rem;font-weight:700;color:var(--t1);letter-spacing:.06em;text-transform:uppercase;}
+.list-ko{font-size:.8rem;color:var(--t3);margin-top:1px;}
+.list-count{margin-left:auto;background:var(--card2);border:1px solid var(--line);color:var(--amber);font-family:var(--oswald);font-size:.8rem;font-weight:600;padding:3px 11px;border-radius:20px;flex-shrink:0;}
+.menu-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;max-width:1200px;margin:0 auto;}
+.menu-item{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 12px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;text-align:center;min-height:70px;font-size:.92rem;font-weight:700;line-height:1.45;color:var(--t2);position:relative;overflow:hidden;}
+.menu-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--amber);transform:scaleY(0);transform-origin:center;transition:transform .15s;}
+.menu-item:hover{background:var(--card2);border-color:var(--amber-border);color:var(--t1);}
+.menu-item:hover::before{transform:scaleY(1);}
+.menu-item:active{transform:scale(.97);}
+
+/* DETAIL */
+.detail-wrap{max-width:1060px;margin:0 auto;}
+
+/* 상세 상단 — 백버튼 + 메뉴명 */
+.detail-header{display:flex;align-items:center;gap:14px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--line2);}
+.detail-name-wrap{flex:1;}
+.detail-label{font-family:var(--oswald);font-size:.68rem;letter-spacing:.22em;color:var(--amber);text-transform:uppercase;font-weight:600;margin-bottom:3px;}
+
+/* 메뉴명 — 크기 줄이고 균형 맞춤 */
+.detail-name{
+  font-family:var(--oswald);
+  font-size:1.5rem;   /* 2.2rem → 1.5rem */
+  font-weight:700;color:var(--t1);line-height:1.25;letter-spacing:.03em;
+}
+
+/* HOT / ICE 레시피 카드 — 세련된 디자인 */
+.recipe-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.recipe-col{display:flex;flex-direction:column;}
+
+.recipe-card{
+  background:var(--card);
+  border-radius:var(--r);
+  overflow:hidden;
+  border:1px solid var(--line);
+  flex:1;display:flex;flex-direction:column;
+}
+
+/* 카드 상단 헤더 — 좌측 컬러 라인 + 타이틀 */
+.recipe-card-head{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 16px;
+  border-bottom:1px solid var(--line);
+}
+.recipe-card-head-dot{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;
+}
+.recipe-card-title{
+  font-family:var(--oswald);font-size:.75rem;
+  letter-spacing:.18em;font-weight:600;text-transform:uppercase;
+}
+.recipe-card-sub{
+  font-size:.7rem;color:var(--t3);margin-left:auto;
+  font-weight:400;letter-spacing:.05em;
+}
+
+/* HOT */
+.recipe-card-hot .recipe-card-head{background:rgba(255,90,60,0.06);}
+.recipe-card-hot .recipe-card-head-dot{background:var(--hot);}
+.recipe-card-hot .recipe-card-title{color:var(--hot);}
+
+/* ICE */
+.recipe-card-ice .recipe-card-head{background:rgba(59,158,255,0.06);}
+.recipe-card-ice .recipe-card-head-dot{background:var(--ice);}
+.recipe-card-ice .recipe-card-title{color:var(--ice);}
+
+.recipe-card-body{
+  padding:18px 16px;
+  font-size:1.05rem;
+  line-height:1.9;
+  font-weight:500;
+  color:var(--t1);
+  flex:1;
+  min-height:200px;
+}
+
+/* 컵 규격 배지 — 작고 깔끔하게 */
+.cup-badge{
+  display:inline-block;
+  background:rgba(255,184,0,0.15);
+  border:1px solid var(--amber-border);
+  color:var(--amber);
+  font-family:var(--oswald);font-size:.7rem;font-weight:700;
+  padding:2px 10px;border-radius:4px;
+  letter-spacing:.1em;text-transform:uppercase;
+  margin:2px 0 6px;
+}
+
+.guide-box{display:flex;align-items:flex-start;gap:10px;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);border-radius:var(--r);padding:12px 16px;font-size:.88rem;font-weight:500;line-height:1.6;max-width:860px;margin:0 auto;}
+.guide-box i{flex-shrink:0;margin-top:2px;font-size:.85rem;}
+
+/* SEARCH */
+.search-label{font-size:.72rem;letter-spacing:.18em;color:var(--t3);text-transform:uppercase;font-weight:600;margin-bottom:3px;}
+.search-query-line{font-family:var(--oswald);font-size:1.4rem;font-weight:700;color:var(--t1);margin-bottom:16px;}
+.search-query-line em{color:var(--amber);font-style:normal;}
+.search-query-line span{color:var(--t3);font-family:var(--noto);font-size:.88rem;margin-left:6px;}
+
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:180px;gap:10px;color:var(--t3);grid-column:1/-1;}
+.empty i{font-size:1.6rem;opacity:.4;}
+.empty p{font-size:.85rem;}
+
+/* LOADER */
+#loader{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:999;transition:opacity .4s;}
+.loader-brand{display:flex;}
+.loader-c{background:var(--amber);color:#000;font-family:var(--oswald);font-size:1.4rem;font-weight:700;padding:6px 12px;border-radius:7px 0 0 7px;}
+.loader-r{background:var(--card2);color:var(--t2);font-family:var(--oswald);font-size:1.4rem;font-weight:500;padding:6px 12px;border-radius:0 7px 7px 0;border:1.5px solid var(--line2);border-left:none;}
+.loader-bar{width:180px;height:2px;background:var(--line2);border-radius:2px;overflow:hidden;}
+.loader-fill{height:100%;width:0;background:var(--amber);border-radius:2px;transition:width .4s ease;}
+.loader-txt{font-size:.72rem;letter-spacing:.18em;color:var(--t3);text-transform:uppercase;}
+
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--card2);border-radius:2px;}
+
+@media(max-width:960px){.cat-grid,.menu-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:680px){
+  :root{--nav-h:56px;}
+  .nav{padding:0 12px;gap:9px;}
+  .nav-logo-r{display:none;}
+  .search-wrap{max-width:150px;}
+  .nbtn span{display:none;}
+  .nbtn{padding:0 10px;height:32px;}
+  .cat-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .cat-card{min-height:96px;padding:12px 8px 10px;}
+  .cat-ko{display:none;}
+  .menu-grid{grid-template-columns:repeat(2,1fr);}
+  .menu-item{font-size:.88rem;min-height:64px;padding:12px 10px;}
+  .recipe-cols{grid-template-columns:1fr;}
+  .detail-name{font-size:1.25rem;}
+  .recipe-card-body{font-size:1rem;min-height:160px;padding:14px 14px;}
+  .page{padding:14px 12px 28px;}
+  .list-title{font-size:1.2rem;}
+  .back-btn{height:38px;padding:0 12px;font-size:.85rem;}
+}
+</style>
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="COMPOSE">
+<meta name="theme-color" content="#FFB800">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8IS0tIOuwsOqyvSAtLT4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgZmlsbD0iIzA3MDcwQSIvPgogIDwhLS0g64W4656AIOyDgeuLqCDrsJQgLS0+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjUxMiIgaGVpZ2h0PSI4IiByeD0iNCIgZmlsbD0iI0ZGQjgwMCIvPgogIDwhLS0g7Lu1IOuquO2GtSAtLT4KICA8cGF0aCBkPSJNMTU2IDE4MCBMMTgwIDM2MCBRMTgyIDM4MCAyMDAgMzgwIEwzMTIgMzgwIFEzMzAgMzgwIDMzMiAzNjAgTDM1NiAxODAgWiIgZmlsbD0iIzFBMUEyNCIgc3Ryb2tlPSIjRkZCODAwIiBzdHJva2Utd2lkdGg9IjYiLz4KICA8IS0tIOy7tSDsnJfrtoDrtoQg65287J24IC0tPgogIDxyZWN0IHg9IjE0OCIgeT0iMTY4IiB3aWR0aD0iMjE2IiBoZWlnaHQ9IjIwIiByeD0iMTAiIGZpbGw9IiNGRkI4MDAiLz4KICA8IS0tIOy7pO2UvCDsnYzro4wgLS0+CiAgPHBhdGggZD0iTTE3MCAyMTAgTDE4NSAzNTUgUTE4NiAzNjggMjAwIDM2OCBMMzEyIDM2OCBRMzI2IDM2OCAzMjcgMzU1IEwzNDIgMjEwIFoiIGZpbGw9IiMyQTFBMDgiLz4KICA8IS0tIOy7pO2UvCDqsbDtkoggKO2BrOumvCkgLS0+CiAgPGVsbGlwc2UgY3g9IjI1NiIgY3k9IjIxNSIgcng9IjgwIiByeT0iMTgiIGZpbGw9IiNDODg3M0EiIG9wYWNpdHk9IjAuOSIvPgogIDwhLS0gQ09NUE9TRSDthY3siqTtirggLS0+CiAgPHRleHQgeD0iMjU2IiB5PSI0MzAiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjaywgc2Fucy1zZXJpZiIgZm9udC1zaXplPSI1MiIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI0ZGQjgwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgbGV0dGVyLXNwYWNpbmc9IjIiPkNPTVBPU0U8L3RleHQ+CiAgPCEtLSDtlZjri6gg65287J24IC0tPgogIDxyZWN0IHg9IjEwMCIgeT0iNDQ1IiB3aWR0aD0iMzEyIiBoZWlnaHQ9IjQiIHJ4PSIyIiBmaWxsPSIjRkZCODAwIiBvcGFjaXR5PSIwLjUiLz4KPC9zdmc+">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8IS0tIOuwsOqyvSAtLT4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgZmlsbD0iIzA3MDcwQSIvPgogIDwhLS0g64W4656AIOyDgeuLqCDrsJQgLS0+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjUxMiIgaGVpZ2h0PSI4IiByeD0iNCIgZmlsbD0iI0ZGQjgwMCIvPgogIDwhLS0g7Lu1IOuquO2GtSAtLT4KICA8cGF0aCBkPSJNMTU2IDE4MCBMMTgwIDM2MCBRMTgyIDM4MCAyMDAgMzgwIEwzMTIgMzgwIFEzMzAgMzgwIDMzMiAzNjAgTDM1NiAxODAgWiIgZmlsbD0iIzFBMUEyNCIgc3Ryb2tlPSIjRkZCODAwIiBzdHJva2Utd2lkdGg9IjYiLz4KICA8IS0tIOy7tSDsnJfrtoDrtoQg65287J24IC0tPgogIDxyZWN0IHg9IjE0OCIgeT0iMTY4IiB3aWR0aD0iMjE2IiBoZWlnaHQ9IjIwIiByeD0iMTAiIGZpbGw9IiNGRkI4MDAiLz4KICA8IS0tIOy7pO2UvCDsnYzro4wgLS0+CiAgPHBhdGggZD0iTTE3MCAyMTAgTDE4NSAzNTUgUTE4NiAzNjggMjAwIDM2OCBMMzEyIDM2OCBRMzI2IDM2OCAzMjcgMzU1IEwzNDIgMjEwIFoiIGZpbGw9IiMyQTFBMDgiLz4KICA8IS0tIOy7pO2UvCDqsbDtkoggKO2BrOumvCkgLS0+CiAgPGVsbGlwc2UgY3g9IjI1NiIgY3k9IjIxNSIgcng9IjgwIiByeT0iMTgiIGZpbGw9IiNDODg3M0EiIG9wYWNpdHk9IjAuOSIvPgogIDwhLS0gQ09NUE9TRSDthY3siqTtirggLS0+CiAgPHRleHQgeD0iMjU2IiB5PSI0MzAiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjaywgc2Fucy1zZXJpZiIgZm9udC1zaXplPSI1MiIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI0ZGQjgwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgbGV0dGVyLXNwYWNpbmc9IjIiPkNPTVBPU0U8L3RleHQ+CiAgPCEtLSDtlZjri6gg65287J24IC0tPgogIDxyZWN0IHg9IjEwMCIgeT0iNDQ1IiB3aWR0aD0iMzEyIiBoZWlnaHQ9IjQiIHJ4PSIyIiBmaWxsPSIjRkZCODAwIiBvcGFjaXR5PSIwLjUiLz4KPC9zdmc+">
+<style>
+/* 앱 설치 배너 숨기기 */
+body { -webkit-touch-callout: none; }
+</style>
+</head>
+<body>
+<div id="loader">
+  <div class="loader-brand"><div class="loader-c">COMPOSE</div><div class="loader-r">RECIPE</div></div>
+  <div class="loader-bar"><div class="loader-fill" id="loaderFill"></div></div>
+  <div class="loader-txt" id="loaderTxt">레시피 불러오는 중…</div>
+</div>
+
+<nav class="nav">
+  <div class="nav-logo" onclick="goHome()"><div class="nav-logo-c">COMPOSE</div><div class="nav-logo-r">RECIPE</div></div>
+  <div class="search-wrap">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input class="search-input" id="searchInput" type="text" placeholder="메뉴 검색…" oninput="onSearch(this.value)" autocomplete="off" onfocus="openAC()" onblur="closeAC()">
+    <div class="autocomplete" id="acBox"></div>
+  </div>
+  <div class="nav-btns">
+    <button class="nbtn nbtn-y" onclick="goHome()"><i class="fa-solid fa-house"></i><span>HOME</span></button>
+    <button class="nbtn nbtn-g" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i><span>BACK</span></button>
+  </div>
+</nav>
+
+<!-- HOME: 퀵바 없이 카테고리만 -->
+<div id="s-main" class="screen active">
+  <div class="page">
+    <div class="cat-grid" id="catGrid"></div>
+  </div>
+</div>
+
+<!-- LIST -->
+<div id="s-list" class="screen">
+  <div class="page">
+    <div class="list-header">
+      <div class="back-btn" onclick="goHome()">
+        <i class="fa-solid fa-arrow-left"></i> BACK
+      </div>
+      <div>
+        <div class="list-title" id="listTitle">CATEGORY</div>
+        <div class="list-ko" id="listKo"></div>
+      </div>
+      <div class="list-count" id="listCount">0</div>
+    </div>
+    <div class="menu-grid" id="menuGrid"></div>
+  </div>
+</div>
+
+<!-- DETAIL -->
+<div id="s-detail" class="screen">
+  <div class="page" id="detailPage">
+    <div class="detail-wrap">
+      <div class="detail-header">
+        <div class="back-btn" onclick="goBack()">
+          <i class="fa-solid fa-arrow-left"></i> BACK
+        </div>
+        <div class="detail-name-wrap">
+          <div class="detail-label">Recipe</div>
+          <div class="detail-name" id="detailName"></div>
+        </div>
+      </div>
+      <div class="recipe-cols" id="recipeArea"></div>
+      <div id="guideArea"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div id="s-search" class="screen">
+  <div class="page">
+    <div class="search-label">Search Results</div>
+    <div class="search-query-line" id="searchLine"></div>
+    <div class="menu-grid" id="searchGrid"></div>
+  </div>
+</div>
+
+<script>
+const API='https://script.google.com/macros/s/AKfycbwr5BfQ7hMNB-pZjNmtXx9FIkF0k7uKwhDVkUDcJy8pbxdREgv_YxMERPj6QGq_hwxZPQ/exec';
+let recipes=[],cur='main',prev='main';
+const CATS=[
+  {id:'new',en:'New Menu',ko:'이달의 신메뉴',icon:'fa-fire',isNew:true},
+  {id:'coffee',en:'Coffee',ko:'에스프레소 커피',icon:'fa-mug-hot'},
+  {id:'coldbrew',en:'Cold Brew',ko:'차갑게 내린 커피',icon:'fa-droplet'},
+  {id:'noncoffee_l',en:'Latte',ko:'논커피 라떼',icon:'fa-mug-saucer'},
+  {id:'fruit_latte',en:'Fruit Latte',ko:'과일 라떼',icon:'fa-apple-whole'},
+  {id:'noncoffee_s',en:'Non-Coffee',ko:'시럽/파우더 베이스',icon:'fa-cookie'},
+  {id:'icetea',en:'Ice Tea',ko:'아이스티',icon:'fa-glass-water-droplet'},
+  {id:'icetea_base',en:'Tea Base',ko:'티 베이스 제조법',icon:'fa-vial-circle-check'},
+  {id:'tea',en:'Tea',ko:'티백 및 청 차',icon:'fa-leaf'},
+  {id:'ade',en:'Ade',ko:'에이드',icon:'fa-glass-water'},
+  {id:'juice',en:'Fruit Juice',ko:'과일 주스',icon:'fa-vial'},
+  {id:'smoothie',en:'Smoothie',ko:'스무디',icon:'fa-blender'},
+  {id:'yogurt',en:'Yogurt',ko:'요거트 스무디',icon:'fa-ice-cream'},
+  {id:'frappe',en:'Frappé',ko:'프라페',icon:'fa-snowflake'},
+  {id:'shake',en:'Milkshake',ko:'상하목장 쉐이크',icon:'fa-cow'},
+  {id:'base',en:'Base',ko:'기타 베이스/재료',icon:'fa-box-open'}
+];
+function setProgress(p,t){document.getElementById('loaderFill').style.width=p+'%';if(t)document.getElementById('loaderTxt').textContent=t;}
+function hideLoader(){const l=document.getElementById('loader');l.style.opacity='0';setTimeout(()=>l.style.display='none',400);}
+async function init(){
+  buildHome();
+  setProgress(30,'구글시트 연결 중…');
+  try{
+    const res=await fetch(API);
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const json=await res.json();
+    recipes=json.filter(r=>r.name&&String(r.name).trim()!=='');
+    setProgress(100,'완료!');setTimeout(hideLoader,300);
+  }catch(e){
+    console.error('fetch 실패, JSONP 시도…',e);
+    try{
+      recipes=await jsonp(API);
+      recipes=recipes.filter(r=>r.name&&String(r.name).trim()!=='');
+      setProgress(100,'완료!');setTimeout(hideLoader,300);
+    }catch(e2){
+      console.error('JSONP도 실패',e2);
+      setProgress(100,'로딩 실패');setTimeout(hideLoader,800);
+    }
+  }
+}
+function jsonp(url){
+  return new Promise((resolve,reject)=>{
+    const cb='_cb'+Date.now();
+    const s=document.createElement('script');
+    s.src=url+'?callback='+cb;
+    window[cb]=(data)=>{delete window[cb];document.body.removeChild(s);resolve(data);};
+    s.onerror=()=>reject(new Error('jsonp error'));
+    setTimeout(()=>reject(new Error('timeout')),12000);
+    document.body.appendChild(s);
+  });
+}
+function buildHome(){
+  document.getElementById('catGrid').innerHTML=CATS.map(c=>`
+    <div class="cat-card" onclick="openCat('${c.id}','${c.en}','${c.ko}')">
+      ${c.isNew?'<div class="new-dot">NEW</div>':''}
+      <div class="cat-icon"><i class="fa-solid ${c.icon}${c.isNew?' icon-hot':''}"></i></div>
+      <div class="cat-name">${c.en}</div>
+      <div class="cat-ko">${c.ko}</div>
+    </div>`).join('');
+}
+function openCat(id,en,ko){
+  const items=recipes.map((r,i)=>({r,i})).filter(e=>String(e.r.category).trim().toLowerCase()===id);
+  document.getElementById('listTitle').textContent=en;
+  document.getElementById('listKo').textContent=ko;
+  document.getElementById('listCount').textContent=items.length+'개';
+  document.getElementById('menuGrid').innerHTML=items.length
+    ?items.map(e=>`<div class="menu-item" onclick="openDetail(${e.i})">${e.r.name.replace(/\n/g,'<br>')}</div>`).join('')
+    :`<div class="empty"><i class="fa-regular fa-inbox"></i><p>등록된 메뉴가 없습니다</p></div>`;
+  show('list');
+}
+function fmt(t){
+  if(!t||String(t).trim()==='')return '<span style="color:var(--t3);font-size:.85rem;">해당 레시피 없음</span>';
+  return String(t).replace(/\[(.*?)\]/g,'<div class="cup-badge">$1</div><br>').replace(/\n/g,'<br>');
+}
+function openDetail(i){
+  const d=recipes[i];if(!d)return;
+  document.getElementById('detailName').innerHTML=d.name.replace(/\n/g,' · ');
+  document.getElementById('recipeArea').innerHTML=`
+    <div class="recipe-col">
+      <div class="recipe-card recipe-card-hot">
+        <div class="recipe-card-head">
+          <div class="recipe-card-head-dot"></div>
+          <span class="recipe-card-title"><i class="fa-solid fa-fire-flame-curved"></i> HOT</span>
+          <span class="recipe-card-sub">종이컵 20oz</span>
+        </div>
+        <div class="recipe-card-body">${fmt(d.recipe_left)}</div>
+      </div>
+    </div>
+    <div class="recipe-col">
+      <div class="recipe-card recipe-card-ice">
+        <div class="recipe-card-head">
+          <div class="recipe-card-head-dot"></div>
+          <span class="recipe-card-title"><i class="fa-solid fa-snowflake"></i> ICE</span>
+          <span class="recipe-card-sub">PT컵 20oz</span>
+        </div>
+        <div class="recipe-card-body">${fmt(d.recipe_right)}</div>
+      </div>
+    </div>`;
+  const g=document.getElementById('guideArea');
+  g.innerHTML=d.guide&&String(d.guide).trim()
+    ?`<div class="guide-box"><i class="fa-solid fa-circle-info"></i><span>${String(d.guide).replace(/\n/g,'<br>')}</span></div>`:'';
+  document.getElementById('detailPage').scrollTop=0;
+  show('detail');
+}
+let stimer;
+function onSearch(v){clearTimeout(stimer);const q=v.trim();updateAC(q);if(!q){if(cur==='search')goHome();return;}stimer=setTimeout(()=>doSearch(q),200);}
+function doSearch(q){
+  const hits=recipes.map((r,i)=>({r,i})).filter(e=>e.r.name&&e.r.name.includes(q));
+  document.getElementById('searchLine').innerHTML=`<em>${q}</em> <span>${hits.length}개</span>`;
+  document.getElementById('searchGrid').innerHTML=hits.length
+    ?hits.map(e=>`<div class="menu-item" onclick="openDetail(${e.i})">${e.r.name.replace(/\n/g,'<br>')}</div>`).join('')
+    :`<div class="empty"><i class="fa-regular fa-magnifying-glass"></i><p>검색 결과가 없습니다</p></div>`;
+  show('search');
+}
+function updateAC(q){
+  const box=document.getElementById('acBox');
+  if(!q){box.classList.remove('open');return;}
+  const hits=recipes.filter(r=>r.name&&r.name.includes(q)).slice(0,6);
+  if(!hits.length){box.classList.remove('open');return;}
+  box.innerHTML=hits.map(r=>{const idx=recipes.indexOf(r);return`<div class="ac-item" onmousedown="selectAC(${idx})"><i class="fa-solid fa-mug-hot"></i><span>${r.name.replace(/\n/g,' ')}</span></div>`;}).join('');
+  box.classList.add('open');
+}
+function selectAC(i){document.getElementById('searchInput').value='';document.getElementById('acBox').classList.remove('open');openDetail(i);}
+function openAC(){const v=document.getElementById('searchInput').value.trim();if(v)updateAC(v);}
+function closeAC(){setTimeout(()=>document.getElementById('acBox').classList.remove('open'),150);}
+function show(id){prev=cur;cur=id;document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('s-'+id).classList.add('active');}
+function goHome(){document.getElementById('searchInput').value='';document.getElementById('acBox').classList.remove('open');show('main');prev='main';}
+function goBack(){if(cur==='detail')show(prev==='search'?'search':'list');else if(cur==='search'){document.getElementById('searchInput').value='';show('main');}else if(cur==='list')show('main');else show('main');}
+window.onload=init;
+</script>
+</body>
+</html>
